@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# vcr
+fixtures/
+
 # C extensions
 *.so
 
