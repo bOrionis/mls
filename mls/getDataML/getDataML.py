@@ -55,6 +55,7 @@ class mlURL:
 
         # valores almacenados
         self.totalItems = ''    # Cantida de items en la busqueda realizada
+        self.url =''            # URL base obtenida del metodo getURL()
 
     def getURL(self):
         'Devuelve un string con la URL de la API de ML segun los parametros configurados'
@@ -206,7 +207,51 @@ def getData(url):
         
         #print (n_offsets)
         n_offsets += 1
+    
+def get_by_key(URL = '', key = ''):
+    '''Devuelve el diccionario con las categorias disponibles.
 
+
+    '''
+
+    r = requests.get(URL)
+    cat = r.json()[key] if key else r.json()
+    return cat
+
+def getCategories(CATEGORY_ID = '', key = ''):
+    '''Devuelve el diccionario con las categorias disponibles.
+
+    Si no se especifican argumentos, devuelve todas las categorias
+    Sino para una URL de categorias, devuelve las categorias de la key indicada
+
+    Ejemplo:
+
+    # Obtener todas las categorias disponibles
+    -----------------------------------
+    allCat = getCategories()
+    -----------------------------------
+
+    # Obtener las categorias de raiz y las hijas de una categoria
+    -----------------------------------
+    CATEGORY_ID = 'MLA5725'
+
+    rootCat = getCategories(CATEGORY_ID, key = 'root')
+    childCat = getCategories(CATEGORY_ID, key = 'child')
+    -----------------------------------
+
+    '''
+    URL = 'https://api.mercadolibre.com/categories/'
+    URL = URL+CATEGORY_ID if CATEGORY_ID else 'https://api.mercadolibre.com/sites/MLA/categories'
+
+    if key == 'child':
+        cat = get_by_key(URL, key = 'children_categories')
+    elif key == 'root':
+        cat = get_by_key(URL, key = 'path_from_root')
+    else:
+        cat = get_by_key(URL)
+
+    return cat
+        
 
 #crear una clase para los filtros
 
