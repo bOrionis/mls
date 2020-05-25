@@ -1,0 +1,4 @@
+include LICENSE.md README.md
+include MANIFEST.in
+include setup.py
+graft example*

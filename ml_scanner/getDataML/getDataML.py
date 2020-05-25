@@ -1,5 +1,5 @@
 import requests
-#import vcr
+import sys
 import os
 import pickle
 
@@ -84,69 +84,6 @@ class mlURL:
         URL = self.url + offset
         return URL
 
-def saveItem(item, file, mode = 'r'):
-    '''Guarda en un archivo binario de nombre file la variable item.
-
-    Por default hace un chequeo de existencia del archivo y solicita la confirmacion de sobreescritura.
-    Si se desea sobreescribir directamenete, incluir una tercera variable con el caracter 'o'
-
-    Requiere importar el paquete pickle
-
-    Ejemplos:
-
-    -------------------------------------------
-    import pickle
-
-    a = ['a','b', 'c']
-    saveItem(a, 'aList.f')
-
-    La variable -a- se puede recuperar con:
-    file = open("aList.f", "rb")
-    a = pickle.load(file)
-
-    -------------------------------------------
-    import pickle
-    from getDataML import getData
-    from getDataML import mlURL
-
-    url = mlURL()
-    url.CATEGORY_ID = 'MLA1743'
-    url.find = 'Ford fiesta kinetic 2011'
-
-    items = getData(url)
-
-    item = next(items) # 1er item de la busqueda
-    saveItem(item, 'item_0.dict')
-
-    item = next(items) # 2do item de la busqueda
-    saveItem(item, 'item_1.dict')
-
-    item = next(items) # 3er item de la busqueda
-    saveItem(item, 'item_2.dict')
-    ...
-
-    -------------------------------------------
-
-    #Los items se pueden cargar con:
-    file = open("item_0.dict", "rb")
-    item = pickle.load(file)
-    -------------------------------------------
-
-    '''
-    # modo de confirmacion para reemplazar archivos
-    if mode == 'r':            
-        nFile = file
-        while os.path.isfile(nFile):
-            print('File ' + nFile + ' already exist. Enter new name or press Enter to replace.')
-            nFile = input('')
-            # En caso de que se quiera reemplazar otro archivo, guardo el nuevo nombre:
-            if nFile: file = nFile
-        if nFile: file = nFile
-            
-    a_file = open(file, "wb")
-    pickle.dump(item, a_file)
-    a_file.close()
-
 def getData(url):
     '''Generador que devuelve progresivamente un diccionario con el resultado de la busqueda.
 
@@ -192,31 +129,35 @@ def getData(url):
     totalItems = r.json()['paging']['total']
     limit = r.json()['paging']['limit']
     url.totalItems = totalItems
-    #print('Hay un total de', totalItems,'items')
+    print(' - Se encontraron',totalItems,'resultados.')
+
     offsets = int((totalItems-1)/limit + 1)
     n_offsets = 0
+
+    bar = toolbar(int(totalItems))
     # recorro cada bloque de 50 publicaciones
+    next(bar)
     while n_offsets < offsets:
+        
         URL = url.getURL_w_offset(n_offsets)
         r = requests.get(URL)
         # recorro cada publicacion del bloque
         for item in r.json()['results']:
             #price = item['price']
             #yield price
+            next(bar)
             yield item
         
         #print (n_offsets)
         n_offsets += 1
     
 def get_by_key(URL = '', key = ''):
-    '''Devuelve el diccionario con las categorias disponibles.
-
+    '''Devuelve el diccionario bajo el key.
 
     '''
-
     r = requests.get(URL)
-    cat = r.json()[key] if key else r.json()
-    return cat
+    dic = r.json()[key] if key else r.json()
+    return dic
 
 def getCategories(CATEGORY_ID = '', key = ''):
     '''Devuelve el diccionario con las categorias disponibles.
@@ -252,7 +193,38 @@ def getCategories(CATEGORY_ID = '', key = ''):
 
     return cat
         
+def toolbar(toolbar_width = 40):
+    '''Imprime una barra de progreso: [##########].
 
+    # Variables:
+
+    toolbar_width:  Ancho total de la barra.
+
+    # Uso:
+    ------------------------------------
+    progressTotal = 8
+    bar = toolbar(progressTotal)
+
+    next(bar)
+    for i in range(progressTotal):
+        #cosas del programa
+        next(bar)
+    ------------------------------------
+
+    '''
+
+    # setup toolbar
+    sys.stdout.write("[%s]" % (" " * toolbar_width))
+    sys.stdout.flush()
+    sys.stdout.write("\b" * (toolbar_width+1)) # return to start of line, after '['
+
+    for i in range(toolbar_width):
+        # update the bar
+        sys.stdout.write("|")
+        sys.stdout.flush()
+        yield
+    sys.stdout.write("]\n") # this ends the progress bar
+    yield
 #crear una clase para los filtros
 
 
