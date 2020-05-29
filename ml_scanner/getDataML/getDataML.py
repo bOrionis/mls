@@ -218,7 +218,7 @@ def toolbar(toolbar_width = 40):
     sys.stdout.flush()
     sys.stdout.write("\b" * (toolbar_width+1)) # return to start of line, after '['
 
-    for i in range(toolbar_width):
+    for _i in range(toolbar_width):
         # update the bar
         sys.stdout.write("|")
         sys.stdout.flush()

@@ -114,6 +114,7 @@ def saveItem(item, fileName, mode = 'r'):
     La variable -a- se puede recuperar con:
     file = open("aList.f", "rb")
     a = pickle.load(file)
+    file.close()
 
     -------------------------------------------
     import pickle
@@ -153,7 +154,6 @@ def saveItem(item, fileName, mode = 'r'):
             # En caso de que se quiera reemplazar otro archivo, guardo el nuevo nombre:
             if nFile: fileName = fileName
         if nFile: fileName = nFile
-            
-    a_file = open(fileName, "wb")
-    pickle.dump(item, a_file)
-    a_file.close()
+
+    with open(fileName, "wb") as file:
+        pickle.dump(item, file)
