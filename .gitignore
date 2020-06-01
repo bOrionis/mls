@@ -5,6 +5,7 @@ __pycache__/
 
 # vcr
 fixtures/
+.vscode/
 
 # C extensions
 *.so
