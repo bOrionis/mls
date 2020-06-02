@@ -156,7 +156,7 @@ def getData(url):
         #print (n_offsets)
         n_offsets += 1
     
-def get_by_key(URL = '', key = ''):
+def get_by_key(URL, key = ''):
     '''Devuelve el diccionario bajo el key.
 
     '''

@@ -88,12 +88,27 @@ class config():
             url.SELLER_ID = item.get('SELLER_ID', '')
             url.NICKNAME = item.get('NICKNAME', '')
 
-            results = getDataML.getData(url)
-            print('>>Descargando busqueda',item['label'])
+            URL = url.getURL()
 
-            for result in results:
-                saveItem(result, os.path.join(path, result['id']), mode = 'o')
-            #print('Se guardaron ', str(url.totalItems), ' del item: ', item['label'])
+            retry = True
+            while retry == True:
+                try:
+                    #guardo la informacion bajo la key 'available_filters'
+                    available_filters = getDataML.get_by_key(URL, key = "available_filters")
+                    #guardo la informacion bajo la key 'results'
+                    results = getDataML.getData(url)
+
+                    saveItem(available_filters, os.path.join(path, 'available_filters'), mode = 'o')
+                    print('>>Descargando busqueda',item['label'])
+
+                    for result in results:
+                        saveItem(result, os.path.join(path, result['id']), mode = 'o')
+                    retry = False
+                except Exception as e:
+                    print(e)
+                    print('Intentar',item['label'], 'nuevamente?')
+                    val = input('(S/N) :')
+                    retry = False if val in ['N', 'n'] else True
 
 def saveItem(item, fileName, mode = 'r'):
     '''Guarda en un archivo binario de nombre file la variable item.
