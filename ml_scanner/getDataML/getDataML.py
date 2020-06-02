@@ -124,12 +124,17 @@ def getData(url):
     -------------------------------------------
 
     '''
+    maxItems = 1000
 
     r = requests.get(url.getURL())
     totalItems = r.json()['paging']['total']
     limit = r.json()['paging']['limit']
     url.totalItems = totalItems
     print(' - Se encontraron',totalItems,'resultados.')
+    
+    if totalItems > maxItems:
+        print ('El maximo permitido de publicaciones a descargar es de',maxItems)
+        totalItems = maxItems
 
     offsets = int((totalItems-1)/limit + 1)
     n_offsets = 0
@@ -151,7 +156,7 @@ def getData(url):
         #print (n_offsets)
         n_offsets += 1
     
-def get_by_key(URL = '', key = ''):
+def get_by_key(URL, key = ''):
     '''Devuelve el diccionario bajo el key.
 
     '''
@@ -212,17 +217,34 @@ def toolbar(toolbar_width = 40):
     ------------------------------------
 
     '''
+    max_toolbar_width = 80
+    toolbar_step = 1
+    stop = max_toolbar_width
+    toolbar_width_real = toolbar_width
 
+    # si excedo el ancho maximo, comprimo en toolbar_step veces cada paso. Lo que sobra lo paso uno a uno despues del stop
+    # ej. si max_toolbar_width = 10 y toolbar_width = 15, hago que cada paso equivalngan a 2 hasta completar 10. los restantes lo hago 1 a 1.
+    if toolbar_width > max_toolbar_width:
+        toolbar_step = round(toolbar_width/max_toolbar_width)
+        stop = toolbar_width_real - toolbar_width_real//max_toolbar_width  #2*toolbar_width - toolbar_step*max_toolbar_width
+        toolbar_width_real = toolbar_width
+        toolbar_width = max_toolbar_width
+        
     # setup toolbar
     sys.stdout.write("[%s]" % (" " * toolbar_width))
     sys.stdout.flush()
     sys.stdout.write("\b" * (toolbar_width+1)) # return to start of line, after '['
 
-    for _i in range(toolbar_width):
+    i = 0
+    while i < toolbar_width_real:
         # update the bar
+        j = toolbar_step - 1 if i >= stop else 0
+        while j < toolbar_step:
+            yield
+            i += 1
+            j += 1
         sys.stdout.write("|")
         sys.stdout.flush()
-        yield
     sys.stdout.write("]\n") # this ends the progress bar
     yield
 #crear una clase para los filtros
