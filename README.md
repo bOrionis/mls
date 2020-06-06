@@ -20,6 +20,7 @@ Option -s for an automatic run. mls search a default file name 'config.mls'.
 
 - requests
 - PySympleGUI
+- matplotlib
 
 ## Archivo de configuracion de busqueda
 
@@ -56,6 +57,28 @@ Ejemplo 'config.mls'
 }
 ```
 
+## plots
+
+Crea algunos graficos a partir de una clase tree().
+
+Uso:
+
+```python
+import ml_scanner as mls
+
+studyLabel = 'FKD'
+dates = ['25-05-2020']
+
+tree = mls.tree(studyLabel)
+
+mls.plot_price_km(tree) # plotea el grafico de la utlima fecha disponible
+mls.plot_price_km(tree, printLinks= True)
+
+mls.plot_price_by_date(tree, USD = 120, printLinks = True)
+
+plot_price_km_byItem(tree, printLinks = True, lastLinks = True, onlyChangesLinks = True)
+```
+
 ## loadData
 
 Carga la estructura de archivos almacenados por saveData y permite acceder a la información de las publicaciones.
@@ -63,7 +86,7 @@ Carga la estructura de archivos almacenados por saveData y permite acceder a la 
 Uso:
 
 ```python
-import ml_scanner
+import ml_scanner as mls
 
 cwd = os.path.join('C:','Users','name','Programacion')
 scannFolder = 'mls_RUN'
@@ -72,13 +95,13 @@ studyLabel = 'FKD'
 # creo una instancia de la clase tree:
 ##a) absolut path to studyLabel
 pathToData = os.path.join(cwd, scannFolder, studyLabel)
-label = ml_scanner.tree(pathToData) # absolut path to data
+label = mls.tree(pathToData) # absolut path to data
 
 ##b) scannFolder/studyLabel1, scannFolder/studyLabel2, etc
-label = ml_scanner.tree(scannFolder, studyLabel) # path to one label relative to the scan folder with multiple studyLabels
+label = mls.tree(scannFolder, studyLabel) # path to one label relative to the scan folder with multiple studyLabels
 
 ##c) studyLabel1, studyLabel2, etc
-label = ml_scanner.tree(studyLabel) # relative path to the label
+label = mls.tree(studyLabel) # relative path to the label
 
 
 label.load() #

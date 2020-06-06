@@ -5,20 +5,21 @@ from distutils.core import setup
 
 setup(
   name = 'ml_scanner',         
-  packages = ['ml_scanner','ml_scanner/getDataML','ml_scanner/GUI','ml_scanner/saveData'],  
-  version = '0.1.5',     
+  packages = ['ml_scanner','ml_scanner/getDataML','ml_scanner/GUI','ml_scanner/loadData','ml_scanner/saveData'],  
+  version = '0.1.10',     
   license='MIT',       
   description = 'Scanner of ML publications',
   #long_description = long_description ,
   #long_description_content_type='text/markdown',
   author = 'Aldebaran bO',  
   author_email = '19.beta.Orionis@gmail.com',   
-  url = 'https://github.com/bOrionis/mls/tree/saveData',  
-  download_url = 'https://github.com/bOrionis/mls/tree/saveData', 
+  url = 'https://github.com/bOrionis/mls/tree/loadData',  
+  download_url = 'https://github.com/bOrionis/mls/tree/loadData', 
   keywords = ['Scrapper', 'Mercado libre', 'scanner', 'Monitoring'],  
   install_requires=[        
           'request',
-          'PySimpleGUI'
+          'PySimpleGUI',
+          'matplotlib'
       ],
   classifiers=[
     'Development Status :: 3 - Alpha', 
