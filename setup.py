@@ -6,7 +6,7 @@ from distutils.core import setup
 setup(
   name = 'ml_scanner',         
   packages = ['ml_scanner','ml_scanner/getDataML','ml_scanner/GUI','ml_scanner/loadData','ml_scanner/saveData'],  
-  version = '0.1.10',     
+  version = '0.1.11',     
   license='MIT',       
   description = 'Scanner of ML publications',
   #long_description = long_description ,

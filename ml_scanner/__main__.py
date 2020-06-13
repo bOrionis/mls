@@ -12,7 +12,7 @@ if __name__ == '__main__':
         try:
             val = app.run()
         except Exception as e:
-            print(e)
+            print(repr(e))
             print('Intentar nuevamente?')
             val = input('(S/N) :')
 

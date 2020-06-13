@@ -34,7 +34,7 @@ class config():
 
     def __init__(self):
         self.file = 'config.mls'
-        self.q = ''
+        self.query = ''
         self.CATEGORY_ID = ''
         self.atrr = ['price','id']
         self.items = []
@@ -84,11 +84,14 @@ class config():
             url = getDataML.mlURL()
 
             url.CATEGORY_ID = item.get('CATEGORY_ID', '')
-            url.find = item.get('find', '')
+            url.query = item.get('query', '')
             url.SELLER_ID = item.get('SELLER_ID', '')
             url.NICKNAME = item.get('NICKNAME', '')
+            url.f = item.get('f', '')
 
             URL = url.getURL()
+            if url.f:
+                url.loadFiltersFromDict()
 
             retry = True
             while retry == True:
@@ -138,7 +141,7 @@ def saveItem(item, fileName, mode = 'r'):
 
     url = mlURL()
     url.CATEGORY_ID = 'MLA1743'
-    url.find = 'Ford fiesta kinetic 2011'
+    url.query = 'Ford fiesta kinetic 2011'
 
     items = getData(url)
 

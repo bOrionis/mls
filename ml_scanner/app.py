@@ -24,12 +24,12 @@ def run():
                 search.saveData()
                 val = 'N'
             except Exception as e:
-                print(e)
+                print(repr(e))
                 print('Intentar nuevamente?')
                 val = input('(S/N) :')
         return val
     except Exception as e:
-        print(e)
+        print(repr(e))
         print('>> Error en el archivo de configuracion. Intentar nuevamente?')
         val = input('(S/N) :')
         return val

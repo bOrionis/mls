@@ -2,6 +2,8 @@ import requests
 import sys
 import os
 import pickle
+import json
+from urllib.parse import quote
 
 
 class mlURL:
@@ -45,8 +47,8 @@ class mlURL:
         self.ml = 'https://api.mercadolibre.com/'
         self.SITE_ID = 'MLA'
 
-        # valores opcionales
-        self.find = ''          # Texto a buscar
+        # valores configurables
+        self.query = ''         # Texto a buscar
         self.CATEGORY_ID = ''   # Codigos en https://api.mercadolibre.com/sites/MLA/categories
         self.SELLER_ID = ''     # buscar en un vendedor segun su ID
         self.NICKNAME = ''      # buscar en un vendedor segun su NICKNAME
@@ -55,12 +57,15 @@ class mlURL:
 
         # valores almacenados
         self.totalItems = ''    # Cantida de items en la busqueda realizada
-        self.url =''            # URL base obtenida del metodo getURL()
+        self.url = ''           # URL base obtenida del metodo getURL()
+        self.a_filters = {}     # Lista de filtros disponibles
+        self.filters = {}       # Lista de filtros utilizados
+        self.f = {}             # filtros aplicados a self.url
 
     def getURL(self):
         'Devuelve un string con la URL de la API de ML segun los parametros configurados'
 
-        find = 'q=' + self.find.replace(' ', '%20')     if self.find          else ''
+        query = '&q=' + quote(self.query)               if self.query         else ''
         CATEGORY_ID = '&category=' + self.CATEGORY_ID   if self.CATEGORY_ID   else ''
         SELLER_ID = '&seller_id=' + self.SELLER_ID      if self.SELLER_ID     else ''
         NICKNAME = '&nickname=' + self.NICKNAME         if self.NICKNAME      else ''
@@ -68,8 +73,11 @@ class mlURL:
         
         # EH: si algunas de las opciones se quieren poner como vacias con algo distinto a ''. ej. [], None no concatena.
 
-        URL = self.ml +'sites/' + self.SITE_ID + '/search?' + find + CATEGORY_ID + NICKNAME + SELLER_ID + limit # solo sirve para buscar
+        URL = self.ml +'sites/' + self.SITE_ID + '/search?' + query + CATEGORY_ID + NICKNAME + SELLER_ID + limit # solo sirve para buscar
         self.url = URL
+
+        self.a_filters = {}     # Lista de filtros disponibles
+        self.filters = {}       # Lista de filtros utilizados
 
         return URL
 
@@ -83,6 +91,145 @@ class mlURL:
         offset = '&offset=' + str(offset*50)
         URL = self.url + offset
         return URL
+
+    def loadFilters(self):
+        '''Almacena desde self.url la lista de filtros aplicados y filtros disponibles.
+
+        '''
+
+        if not self.url:
+            print('No se genero la URL. Configurar url y ejecutar url.getURL().')
+            return None
+        
+        URL = self.url
+        r = get_by_key(URL)
+
+        total = r['paging']['total']
+        print('>> Hay',total,'items en esta busqueda.')
+
+        self.filters = r["filters"]
+        self.a_filters = r["available_filters"]
+        return True
+    
+    def loadFiltersFromDict(self):
+        filters = ''
+        for key in self.f:
+            filters = filters + '&' + key + '=' + self.f[key]
+        self.url = self.url + filters
+        self.a_filters = {}
+        self.filters = {}
+
+    def print_filters(self):
+        '''Imprime los filtros aplicados en la busqueda.
+
+        '''
+
+        if not self.filters:
+            print('Descargando lista de filtros disponibles...')
+            if not self.loadFilters():
+                return None
+        print('La busqueda contiene los filtros:')
+        for f in self.filters:
+            print('> Filtro:',f['name'],'| ID:',f['id'])
+            for v in f['values']:
+                print('\t - Value:',v['name'], '| ID:',v['id'])
+            #print(json.dumps(f, indent=2))
+
+    def print_a_filters(self):
+        '''Imprime los filtros disponibles para aplicar en la busqueda.
+
+        '''
+
+        if not self.a_filters:
+            print('Descargando lista de filtros disponibles...')
+            if not self.loadFilters():
+                return None
+        print('Se pueden incluir en la busqueda los filtros:')
+        i = 0
+        for f in self.a_filters:
+            print('> Filtro',i,':',f['name'],'| ID:',f['id'])
+            j = 0
+            for v in f['values']:
+                print('\t - Value', j,':',v['name'], '| ID:',v['id'],'| Items:',v['results'])
+                j += 1
+            i += 1
+            #print(json.dumps(f, indent=2))
+
+    def setFilter(self, idF, value, Forzar = False):
+        '''Agrega un filtro 'id' con valor 'value' a self.url. 
+        
+        idF:    String con el id del filtro. 
+        value:  valor para el filtro idF
+        '''
+
+        if not self.a_filters:
+            print('Descargando lista de filtros disponibles...')
+            if not self.loadFilters():
+                return None
+        isId = [True for f in self.a_filters if f['id'] == idF]
+        if isId or Forzar:
+            newFilter = '&' + idF + '=' + value
+            self.url = self.url + newFilter
+            self.a_filters = {}
+            self.filters = {}
+            self.f[idF] = value
+        else:
+            print(idF,'no es un filtro disponible.')
+            return None
+
+    def setFilterIdx(self, idx, valx):
+        '''Agrega a self.url un filtro de la posision idx con valor de posicion valx self.a_filters. 
+
+        idx: indice en self.a_filters del filtro a setear
+        valx: indice del valor
+        '''
+
+        if not self.a_filters:
+            print('Descargando lista de filtros disponibles...')
+            if not self.loadFilters():
+                return None
+        try:
+            idF = self.a_filters[idx]['id']
+            value = self.a_filters[idx]['values'][valx]['id']
+            self.setFilter(idF,value)
+            return idF, value
+        except Exception as e:
+            print(repr(e))
+            print(idF,'no es un filtro disponible.')
+            return None
+
+    def removeFilter(self, idF):
+        '''Remuevo de self.url el filtro 'idF'.
+
+        '''
+
+        idx = self.url.find(idF)
+        if idx > 0:
+            #si hay '&' remuevo ese segmento 
+            #sino remuevo todo el segmento
+            idx2 = self.url[idx::].find('&')
+            if idx2 > 0:
+                URL = self.url[0:idx-1] + self.url[idx+idx2::]
+            else:
+                URL = self.url[0:idx-1]
+            self.url = URL
+            self.a_filters = {}
+            self.filters = {}
+            self.f.pop(idF)
+            print('Se elimino el filtro',idF)
+        else:
+            print(idF,'no es un filtro aplicado.')
+            return None
+
+    def clearFilters(self):
+        '''Elimina todos los filtros.
+
+        '''
+
+        self.getURL()
+        self.f = {}
+        self.a_filters = {}
+        self.filters = {}
 
 def getData(url):
     '''Generador que devuelve progresivamente un diccionario con el resultado de la busqueda.
@@ -98,7 +245,7 @@ def getData(url):
 
     url = mlURL()
     url.CATEGORY_ID = 'MLA1743'
-    url.find = 'Ford fiesta kinetic 2011'
+    url.query = 'Ford fiesta kinetic 2011'
         
     prices = [item['price'] for item in getData(url)] # devuelve todos los precios de la busqueda
     print(prices)
@@ -110,7 +257,7 @@ def getData(url):
 
     url = mlURL()
     url.CATEGORY_ID = 'MLA1743'
-    url.find = 'Ford fiesta kinetic'
+    url.query = 'Ford fiesta kinetic'
 
     items = getData(url)
 
@@ -126,7 +273,7 @@ def getData(url):
     '''
     maxItems = 1000
 
-    r = requests.get(url.getURL())
+    r = requests.get(url.url)
     totalItems = r.json()['paging']['total']
     limit = r.json()['paging']['limit']
     url.totalItems = totalItems
@@ -157,12 +304,21 @@ def getData(url):
         n_offsets += 1
     
 def get_by_key(URL, key = ''):
-    '''Devuelve el diccionario bajo el key.
+    '''Devuelve el diccionario bajo el key. Sin key, devuelve todo el request
 
     '''
     r = requests.get(URL)
     dic = r.json()[key] if key else r.json()
     return dic
+
+def get_by_keys(URL, keys = []):
+    '''Generador que devuelve el diccionario bajo los keys. Sin keys, devuelve todo el request
+
+    '''
+    r = requests.get(URL)
+    for key in keys:
+        dic = r.json()[key] if key else r.json()
+        yield dic
 
 def getCategories(CATEGORY_ID = '', key = ''):
     '''Devuelve el diccionario con las categorias disponibles.
@@ -197,7 +353,9 @@ def getCategories(CATEGORY_ID = '', key = ''):
         cat = get_by_key(URL)
 
     return cat
-        
+
+
+
 def toolbar(toolbar_width = 40):
     '''Imprime una barra de progreso: [##########].
 
@@ -223,7 +381,7 @@ def toolbar(toolbar_width = 40):
     toolbar_width_real = toolbar_width
 
     # si excedo el ancho maximo, comprimo en toolbar_step veces cada paso. Lo que sobra lo paso uno a uno despues del stop
-    # ej. si max_toolbar_width = 10 y toolbar_width = 15, hago que cada paso equivalngan a 2 hasta completar 10. los restantes lo hago 1 a 1.
+    # ej. si max_toolbar_width = 10 y toolbar_width = 15, hago que cada paso equivalnga a 2 hasta completar 10. los restantes 5 los hago 1 a 1.
     if toolbar_width > max_toolbar_width:
         toolbar_step = round(toolbar_width/max_toolbar_width)
         stop = toolbar_width_real - toolbar_width_real//max_toolbar_width  #2*toolbar_width - toolbar_step*max_toolbar_width

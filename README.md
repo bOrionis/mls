@@ -43,13 +43,13 @@ Ejemplo 'config.mls'
         {
             "label": "FKD",
             "CATEGORY_ID" : "MLA90998",
-            "find": "ford fiesta kinetic 2011",
+            "query": "ford fiesta kinetic 2011",
             "atrr" : ["price", "id", "km"]
             },
         {
             "label": "F_ESP",
             "CATEGORY_ID" : "MLA1743",
-            "find": "ford ecosport xls 2004",
+            "query": "ford ecosport xls 2004",
             "atrr" : ["price", "id", "km"]
             }
         ],
