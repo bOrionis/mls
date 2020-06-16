@@ -67,7 +67,7 @@ def plot_price_km(tree, dates = 'last' , USD = 'get', fileSave = False, printLin
         webbrowser.open(fileSave)
     plt.show()
 
-def plot_price_km_byItem(tree, fileSave = False, USD = 'get', printLinks = False, lastLinks = False, onlyChangesLinks = False):
+def plot_price_km_byItem(tree, fileSave = False, USD = 'get', printLinks = False, lastLinks = False, onlyChanges = False):
     '''Grafica la evolucion temporal de cada publicacion en un grafico km vs precio
 
     '''
@@ -109,7 +109,7 @@ def plot_price_km_byItem(tree, fileSave = False, USD = 'get', printLinks = False
             x.append(km)
         
         plotFlag = True
-        if onlyChangesLinks:
+        if onlyChanges:
             y_mean, y_max, y_min = sum(y)/len(y), max(y), min(y)
             noChange = y_mean == y_max and y_mean == y_min
             plotFlag = False if noChange else True
@@ -151,7 +151,7 @@ def plot_price_km_byItem(tree, fileSave = False, USD = 'get', printLinks = False
         
     plt.show()
 
-def plot_price_by_date(tree, fileSave = False, USD = 'get', printLinks = False, onlyChangesLinks = False):
+def plot_price_by_date(tree, fileSave = False, USD = 'get', printLinks = False, onlyChanges = False):
     '''Crea un grafico con la evolucion temporal del precio de las publicaciones.
 
     '''
@@ -186,7 +186,7 @@ def plot_price_by_date(tree, fileSave = False, USD = 'get', printLinks = False, 
             y.append(price)
 
         plotFlag = True
-        if onlyChangesLinks:
+        if onlyChanges:
             y_mean, y_max, y_min = sum(y)/len(y), max(y), min(y)
             noChange = y_mean == y_max and y_mean == y_min
             plotFlag = False if noChange else True

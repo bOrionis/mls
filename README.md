@@ -29,6 +29,7 @@ En la carpeta donde se ejecuta, incluir un archivo de configuracion de la busque
 - Label: Etiqueta para la busqueda
 - CATEGORY_ID: Codigo de la categoria donde se realiza la busqueda. (Ver Category Browser GUI)
 - find: Texo a buscar
+- f: Diccionario con los filtros de la busqueda
 
 Minimo a incluir:
 
@@ -47,6 +48,11 @@ Ejemplo 'config.mls'
             "atrr" : ["price", "id", "km"]
             },
         {
+            "label": "nescafe_piccolo_xs",
+            "query": "nescafe dolce gusto piccolo xs",
+			"f": {"ITEM_CONDITION": "2230284", "power_seller": "yes", "shipping_quarantine": "guaranteed_delivery", "category": "MLA438284", "price": "*-12500.0"},
+            },
+        {
             "label": "F_ESP",
             "CATEGORY_ID" : "MLA1743",
             "query": "ford ecosport xls 2004",
@@ -55,6 +61,45 @@ Ejemplo 'config.mls'
         ],
     "fecha": "23-05-2020"
 }
+```
+
+## Filtros de busqueda
+
+Para aplicar filtros a la busqueda, se debe ir inspeccionando los filtros disponibles y aplicandolos secuencialmente. Para ver los filtros disponibles de la busqueda general, se utiliza el metodo .print_a_filters. Luego se puede aplicar el filtro deseado con el metodo .setFilterIdx(i_Filtro,j_Value) donde i_Filtro corresponde número de filtro listado y j_Value el numero del seteo para el filtro.
+
+Algunos filtros de rangos, pueden tener values predeterminados pero se pueden setear otros:
+
+```txt
+> Filtro 3 : Precio | ID: price
+         - Value 0 : Hasta $ 10.000 | ID: *-10000.0 | Items: 13
+         - Value 1 : 10000.0 | ID: 10000.0-10000.0 | Items: 2
+         - Value 2 : Más de $10.000 | ID: 10000.0-* | Items: 29
+```
+Para hacer esto, se utiliza el metodo .setFilter(id, value, Forzar= True). Donde id es el id del filtro ('price') y value es el id del value con la configuracion personalizada (ej publicaciones hasta $12500 -> value = '*-12500.0').
+
+Finalmente, una vez que la busqueda devuelve los items deseados se pude aplicar esta configuracion de filtros al archivo config.mls para la busqueda sistematica. Para ello, copiar (reemplazando ' por ") el contenido del miembro .f en el archivo config.mls bajo la key "f"
+
+
+```python
+from ml_scanner.getDataML import getDataML
+
+url = getDataML.mlURL()
+url.query = 'nescafe dolce gusto piccolo xs'
+URL = url.getURL()
+
+# inspeccion de filtros y aplicacion secuencial
+url.print_a_filters()
+url.setFilterIdx(14,0)
+url.print_a_filters()
+url.setFilterIdx(8,0)
+url.print_a_filters()
+url.setFilterIdx(11,0)
+url.print_a_filters()
+url.setFilterIdx(0,1)
+url.print_a_filters()
+url.setFilter('price','*-12500.0',Forzar= True)
+
+url.f
 ```
 
 ## plots
@@ -76,7 +121,7 @@ mls.plot_price_km(tree, printLinks= True)
 
 mls.plot_price_by_date(tree, USD = 120, printLinks = True)
 
-plot_price_km_byItem(tree, printLinks = True, lastLinks = True, onlyChangesLinks = True)
+plot_price_km_byItem(tree, printLinks = True, lastLinks = True, onlyChanges = True)
 ```
 
 ## loadData
